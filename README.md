@@ -1,7 +1,9 @@
 # RenderiteHook
 [![Thunderstore Badge](https://gist.githubusercontent.com/art0007i/c4871bbdb30d31e7899328754916bb81/raw/076910e4939e624f17c88bd879770d3bd2fe3f1e/available-on-thunderstore.svg)](https://thunderstore.io/c/resonite/)
 
-A [Resonite](https://resonite.com/) mod that [TODO: describe what your mod does here].
+A [Resonite](https://resonite.com/) mod that allows passing custom command-line arguments to the Resonite's Unity renderer process.
+
+Only needed for renderer-side modifications - most game logic lives in FrooxEngine and doesn't require this plugin.
 
 ## Installation (Manual)
 1. Install [BepisLoader](https://github.com/ResoniteModding/BepisLoader) for Resonite.
