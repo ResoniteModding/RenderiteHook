@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36408.4 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderiteHook", "Plugin\RenderiteHook.csproj", "{8FDBBB2B-075D-1BE2-A3FB-040B89D34F82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderiteHook", "RenderiteHook\RenderiteHook.csproj", "{8FDBBB2B-075D-1BE2-A3FB-040B89D34F82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
