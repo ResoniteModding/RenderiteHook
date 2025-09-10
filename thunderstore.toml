@@ -22,11 +22,11 @@ readme = "./README.md"
 outdir = "./build"
 
 [[build.copy]]
-source = "./Plugin/bin/Release/RenderiteHook.dll"
+source = "./RenderiteHook/bin/Release/RenderiteHook.dll"
 target = "plugins/RenderiteHook/"
 
 [[build.copy]]
-source = "./Plugin/bin/Release/RenderiteHook.pdb"
+source = "./RenderiteHook/bin/Release/RenderiteHook.pdb"
 target = "plugins/RenderiteHook/"
 
 # [[build.copy]]
