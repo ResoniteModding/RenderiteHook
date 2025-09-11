@@ -47,9 +47,35 @@ public class Plugin : BasePlugin
         public static string OnStartRenderer(string args)
         {
             CopyDoorstopFiles(Engine.Current.RenderSystem);
-            var newArgs = string.Join(' ', [args, .. Environment.GetCommandLineArgs().Skip(1).Select(x => '"' + x + '"')]);
+            
+            var originalArgs = GetOriginalCommandLineArgs();
+            var newArgs = string.IsNullOrEmpty(originalArgs) ? args : args + " " + originalArgs;
             Log.LogInfo($"Starting renderer with args: {newArgs}");
             return newArgs;
+        }
+
+        private static string GetOriginalCommandLineArgs()
+        {
+            string str = Environment.CommandLine;
+
+            if (str.StartsWith("\"") && str.Length > 1)
+            {
+                int ix = str.IndexOf("\"", 1);
+                if (ix != -1)
+                {
+                    str = str.Substring(ix + 1).TrimStart();
+                }
+            }
+            else
+            {
+                int ix = str.IndexOf(" ");
+                if (ix != -1)
+                {
+                    str = str.Substring(ix + 1).TrimStart();
+                }
+            }
+
+            return str;
         }
 
         private static void CopyDoorstopFiles(RenderSystem renderSystem)
