@@ -54,6 +54,21 @@ Task("ExtractDoorstop")
 
     Unzip(zipFile, extractDir);
     Information("Extraction completed.");
+    
+    // Update doorstop_config.ini to point to BepInEx
+    var configFile = extractDir + File("x64/doorstop_config.ini");
+    if (FileExists(configFile))
+    {
+        Information("Updating doorstop_config.ini...");
+        var content = System.IO.File.ReadAllText(configFile);
+        content = content.Replace("target_assembly=Doorstop.dll", "target_assembly=BepInEx\\core\\BepInEx.Preloader.dll");
+        System.IO.File.WriteAllText(configFile, content);
+        Information("Config file updated successfully.");
+    }
+    else
+    {
+        Warning($"Config file not found at: {configFile}");
+    }
 });
 
 Task("BuildRenderiteHook")
