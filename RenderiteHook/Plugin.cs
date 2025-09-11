@@ -13,7 +13,7 @@ namespace RenderiteHook;
 [BepInDependency(BepInExResoniteShim.PluginMetadata.GUID, BepInDependency.DependencyFlags.HardDependency)]
 public class Plugin : BasePlugin
 {
-    internal static new ManualLogSource Log;
+    internal static new ManualLogSource Log = null!;
 
     public override void Load()
     {
@@ -31,7 +31,7 @@ public class Plugin : BasePlugin
             foreach (var code in codes)
             {
                 yield return code;
-                if(code.operand is MethodInfo mi && mi.Name == "ToStringAndClear")
+                if (code.operand is MethodInfo mi && mi.Name == "ToStringAndClear")
                 {
                     patched = true;
                     yield return new CodeInstruction(OpCodes.Call, typeof(ArgumentsPatch).GetMethod(nameof(OnStartRenderer), BindingFlags.Static | BindingFlags.Public)); // Call our method
@@ -47,7 +47,7 @@ public class Plugin : BasePlugin
         public static string OnStartRenderer(string args)
         {
             CopyDoorstopFiles(Engine.Current.RenderSystem);
-            var newArgs = string.Join(' ', [args, ..Environment.GetCommandLineArgs().Skip(1)]);
+            var newArgs = string.Join(' ', [args, .. Environment.GetCommandLineArgs().Skip(1)]);
             Log.LogInfo($"Starting renderer with args: {newArgs}");
             return newArgs;
         }
@@ -88,12 +88,6 @@ public class Plugin : BasePlugin
                 {
                     var relativePath = Path.GetRelativePath(doorstopSourceDir, file);
                     var destPath = Path.Combine(rendererDir, relativePath);
-                    var destDir = Path.GetDirectoryName(destPath);
-
-                    if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
-                    {
-                        Directory.CreateDirectory(destDir);
-                    }
 
                     File.Copy(file, destPath, overwrite: true);
                     Log.LogInfo($"Copied: {relativePath}");
