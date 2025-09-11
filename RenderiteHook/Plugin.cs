@@ -46,7 +46,7 @@ public class Plugin : BasePlugin
 
         public static string OnStartRenderer(string args)
         {
-            var newArgs = string.Join(' ', [args, ..Environment.GetCommandLineArgs().Skip(1)]);
+            var newArgs = string.Join(' ', [args, ..Environment.GetCommandLineArgs().Skip(1).Select(x=> '"' + x + '"')]);
             Log.LogInfo($"Starting renderer with args: {newArgs}");
             return newArgs;
         }
