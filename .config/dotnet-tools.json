@@ -8,6 +8,13 @@
         "tcli"
       ],
       "rollForward": true
+    },
+    "cake.tool": {
+      "version": "5.0.0",
+      "commands": [
+        "dotnet-cake"
+      ],
+      "rollForward": false
     }
   }
 }

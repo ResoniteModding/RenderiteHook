@@ -29,6 +29,10 @@ target = "plugins/RenderiteHook/"
 source = "./RenderiteHook/bin/Release/RenderiteHook.pdb"
 target = "plugins/RenderiteHook/"
 
+[[build.copy]]
+source = "./dist/Doorstop/x64"
+target = "plugins/RenderiteHook/Doorstop"
+
 # [[build.copy]]
 # source = "./CHANGELOG.md"
 # target = "/"
