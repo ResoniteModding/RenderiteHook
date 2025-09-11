@@ -46,9 +46,65 @@ public class Plugin : BasePlugin
 
         public static string OnStartRenderer(string args)
         {
+            CopyDoorstopFiles(Engine.Current.RenderSystem);
             var newArgs = string.Join(' ', [args, ..Environment.GetCommandLineArgs().Skip(1)]);
             Log.LogInfo($"Starting renderer with args: {newArgs}");
             return newArgs;
+        }
+
+        private static void CopyDoorstopFiles(RenderSystem renderSystem)
+        {
+            try
+            {
+                var pluginLocation = Assembly.GetExecutingAssembly().Location;
+                var pluginDir = Path.GetDirectoryName(pluginLocation);
+
+                if (string.IsNullOrEmpty(pluginDir))
+                {
+                    Log.LogError("Could not determine plugin directory");
+                    return;
+                }
+
+                var doorstopSourceDir = Path.Combine(pluginDir, "Doorstop");
+
+                if (!Directory.Exists(doorstopSourceDir))
+                {
+                    Log.LogWarning($"Doorstop directory not found at: {doorstopSourceDir}");
+                    return;
+                }
+
+                var rendererPath = renderSystem.RendererPath;
+                var rendererDir = Path.GetDirectoryName(rendererPath);
+
+                if (string.IsNullOrEmpty(rendererDir))
+                {
+                    Log.LogError("Could not determine renderer directory");
+                    return;
+                }
+
+                Log.LogInfo($"Copying Doorstop files from {doorstopSourceDir} to {rendererDir}");
+
+                foreach (var file in Directory.GetFiles(doorstopSourceDir, "*", SearchOption.AllDirectories))
+                {
+                    var relativePath = Path.GetRelativePath(doorstopSourceDir, file);
+                    var destPath = Path.Combine(rendererDir, relativePath);
+                    var destDir = Path.GetDirectoryName(destPath);
+
+                    if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                    {
+                        Directory.CreateDirectory(destDir);
+                    }
+
+                    File.Copy(file, destPath, overwrite: true);
+                    Log.LogInfo($"Copied: {relativePath}");
+                }
+
+                Log.LogInfo("Doorstop files copied successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Failed to copy Doorstop files: {ex.Message}");
+            }
         }
     }
 }
