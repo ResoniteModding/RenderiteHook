@@ -50,8 +50,70 @@ public class Plugin : BasePlugin
             
             var originalArgs = GetOriginalCommandLineArgs();
             var newArgs = string.IsNullOrEmpty(originalArgs) ? args : args + " " + originalArgs;
+
+            // Try to parse doorstop path, to fix it when running through proton
+            TryFixWineDoorstopPath(ref newArgs);
+
+
             Log.LogInfo($"Starting renderer with args: {newArgs}");
             return newArgs;
+        }
+
+        private static void TryFixWineDoorstopPath(ref string newArgs)
+        {
+            try
+            {
+                var targetAsmArg = newArgs.IndexOf("--doorstop-target-assembly");
+                if (targetAsmArg < 0) return;
+
+                Log.LogInfo(newArgs.Substring(targetAsmArg));
+                var nextSpace = newArgs.IndexOf(" ", targetAsmArg);
+                if (nextSpace < 0) return;
+
+                Log.LogInfo(newArgs.Substring(nextSpace));
+                var argStart = GetIndexOfFirstNonSpace(newArgs, nextSpace);
+                if (argStart < 0) return;
+
+                Log.LogInfo(newArgs.Substring(argStart));
+                var argEnd = -1;
+
+                if (newArgs[argStart] == '"')
+                {
+                    argStart += 1;
+                    argEnd = newArgs.IndexOf('"', argStart);
+                }
+                else
+                {
+                    argEnd = newArgs.IndexOf(' ', argStart);
+                }
+                if (argEnd < 0) argEnd = newArgs.Length;
+
+                var path = newArgs.Substring(argStart, argEnd - argStart);
+
+                // TODO: replace this check with a proper check to see if bootstrapper is running inside proton.
+                // The current check works assuming all paths passed to doorstop-target-assembly are fully qualified
+                // (because then linux paths start with a slash, and windows ones start with a letter)
+                // which is always the case when using mod managers.
+                if (!path.StartsWith('/')) return;
+
+                Log.LogInfo(path);
+                var newPath = newArgs.Substring(0, argStart) + "Z:" + path + newArgs.Substring(argEnd);
+                Log.LogInfo(newPath);
+                newArgs = newPath;
+            }
+            catch {}
+        }
+
+        private static int GetIndexOfFirstNonSpace(string input, int startIndex)
+        {
+            for (int i = startIndex; i < input.Length; i++)
+            {
+                if (!char.IsWhiteSpace(input[i]))
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         private static string GetOriginalCommandLineArgs()
