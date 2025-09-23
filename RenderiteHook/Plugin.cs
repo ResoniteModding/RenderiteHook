@@ -66,15 +66,12 @@ public class Plugin : BasePlugin
                 var targetAsmArg = newArgs.IndexOf("--doorstop-target-assembly");
                 if (targetAsmArg < 0) return;
 
-                Log.LogInfo(newArgs.Substring(targetAsmArg));
                 var nextSpace = newArgs.IndexOf(" ", targetAsmArg);
                 if (nextSpace < 0) return;
 
-                Log.LogInfo(newArgs.Substring(nextSpace));
                 var argStart = GetIndexOfFirstNonSpace(newArgs, nextSpace);
                 if (argStart < 0) return;
 
-                Log.LogInfo(newArgs.Substring(argStart));
                 var argEnd = -1;
 
                 if (newArgs[argStart] == '"')
@@ -96,10 +93,8 @@ public class Plugin : BasePlugin
                 // which is always the case when using mod managers.
                 if (!path.StartsWith('/')) return;
 
-                Log.LogInfo(path);
-                var newPath = newArgs.Substring(0, argStart) + "Z:" + path + newArgs.Substring(argEnd);
-                Log.LogInfo(newPath);
-                newArgs = newPath;
+                Log.LogInfo($"Replacing --doorstop-target-assembly to add Z: drive. Old arguments: {newArgs}");
+                newArgs = newArgs.Substring(0, argStart) + "Z:" + path + newArgs.Substring(argEnd);
             }
             catch {}
         }
