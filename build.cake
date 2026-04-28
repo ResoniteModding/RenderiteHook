@@ -121,7 +121,9 @@ Task("ExtractDoorstop")
 	{
 		Information("Updating doorstop_config.ini...");
 		var content = System.IO.File.ReadAllText(configFile);
-		content = content.Replace("target_assembly=Doorstop.dll", "target_assembly=BepInEx\\core\\BepInEx.Preloader.dll");
+		content = content.Replace("target_assembly=Doorstop.dll", "target_assembly=BepInEx\\core\\BepInEx.Unity.IL2CPP.dll");
+		content = content.Replace("coreclr_path=", "coreclr_path=dotnet\\coreclr.dll");
+		content = content.Replace("corlib_dir=", "corlib_dir=dotnet");
 		System.IO.File.WriteAllText(configFile, content);
 		Information("Config file updated successfully.");
 	}
