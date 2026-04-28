@@ -33,6 +33,10 @@ target = "plugins/RenderiteHook/"
 source = "./dist/Doorstop/x64"
 target = "plugins/RenderiteHook/Doorstop"
 
+[[build.copy]]
+source = "./dist/dotnet"
+target = "plugins/RenderiteHook/dotnet"
+
 # [[build.copy]]
 # source = "./CHANGELOG.md"
 # target = "/"
