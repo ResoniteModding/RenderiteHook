@@ -8,60 +8,50 @@ var configuration = Argument("configuration", "Release");
 var packageVersion = XmlPeek(projectPath, "/Project/PropertyGroup/Version");
 
 var distDir = Directory("./dist");
-var extractDir = distDir + Directory("Doorstop");
-var downloadUrl = $"https://github.com/NeighTools/UnityDoorstop/releases/download/v{doorstopVersion}/doorstop_win_release_{doorstopVersion}.zip";
-var zipFile = distDir + File($"doorstop_win_release_{doorstopVersion}.zip");
+var cacheDir = Directory("./downloads");
+
+var doorstopUrl = $"https://github.com/NeighTools/UnityDoorstop/releases/download/v{doorstopVersion}/doorstop_win_release_{doorstopVersion}.zip";
+var doorstopZip = cacheDir + File($"doorstop_win_release_{doorstopVersion}.zip");
+var doorstopExtractDir = distDir + Directory("Doorstop");
 
 var dotnetRuntimeUrl = $"https://builds.dotnet.microsoft.com/dotnet/Runtime/{dotnetRuntimeVersion}/dotnet-runtime-{dotnetRuntimeVersion}-win-x64.zip";
-var dotnetRuntimeZip = distDir + File($"dotnet-runtime-{dotnetRuntimeVersion}-win-x64.zip");
+var dotnetRuntimeZip = cacheDir + File($"dotnet-runtime-{dotnetRuntimeVersion}-win-x64.zip");
 var dotnetExtractDir = distDir + Directory("dotnet_extract");
 var dotnetDestDir = distDir + Directory("dotnet");
 
 Task("Clean")
 	.Does(() =>
 {
-	if (DirectoryExists(distDir))
-	{
-		CleanDirectory(distDir);
-	}
-	else
-	{
-		CreateDirectory(distDir);
-	}
+	EnsureDirectoryExists(distDir);
+	CleanDirectory(distDir);
 });
 
 Task("DownloadDoorstop")
-	.IsDependentOn("Clean")
 	.Does(() =>
 {
+	EnsureDirectoryExists(cacheDir);
+	if (FileExists(doorstopZip))
+	{
+		Information("Doorstop zip cached, skipping download.");
+		return;
+	}
 	Information($"Downloading Doorstop v{doorstopVersion}...");
-
-	if (!FileExists(zipFile))
-	{
-		DownloadFile(downloadUrl, zipFile);
-		Information($"Downloaded to: {zipFile}");
-	}
-	else
-	{
-		Information("File already exists, skipping download.");
-	}
+	DownloadFile(doorstopUrl, doorstopZip);
+	Information($"Downloaded to: {doorstopZip}");
 });
 
 Task("DownloadDotnetRuntime")
-	.IsDependentOn("Clean")
 	.Does(() =>
 {
+	EnsureDirectoryExists(cacheDir);
+	if (FileExists(dotnetRuntimeZip))
+	{
+		Information(".NET Runtime zip cached, skipping download.");
+		return;
+	}
 	Information($"Downloading .NET Runtime v{dotnetRuntimeVersion}...");
-
-	if (!FileExists(dotnetRuntimeZip))
-	{
-		DownloadFile(dotnetRuntimeUrl, dotnetRuntimeZip);
-		Information($"Downloaded to: {dotnetRuntimeZip}");
-	}
-	else
-	{
-		Information("File already exists, skipping download.");
-	}
+	DownloadFile(dotnetRuntimeUrl, dotnetRuntimeZip);
+	Information($"Downloaded to: {dotnetRuntimeZip}");
 });
 
 Task("ExtractDotnetRuntime")
@@ -70,19 +60,13 @@ Task("ExtractDotnetRuntime")
 {
 	Information($"Extracting .NET Runtime to {dotnetDestDir}...");
 
-	if (!DirectoryExists(dotnetExtractDir))
-	{
-		CreateDirectory(dotnetExtractDir);
-	}
-
+	EnsureDirectoryExists(dotnetExtractDir);
+	CleanDirectory(dotnetExtractDir);
 	Unzip(dotnetRuntimeZip, dotnetExtractDir);
 
 	var sharedFrameworkDir = dotnetExtractDir + Directory("shared") + Directory("Microsoft.NETCore.App") + Directory(dotnetRuntimeVersion);
 
-	if (!DirectoryExists(dotnetDestDir))
-	{
-		CreateDirectory(dotnetDestDir);
-	}
+	EnsureDirectoryExists(dotnetDestDir);
 
 	// Flatten: copy files directly into dist/dotnet/ (no subdirectory nesting)
 	var globPath = (DirectoryPath)sharedFrameworkDir + "/**/*.*";
@@ -105,18 +89,16 @@ Task("ExtractDoorstop")
 	.IsDependentOn("DownloadDoorstop")
 	.Does(() =>
 {
-	Information($"Extracting Doorstop to {extractDir}...");
+	Information($"Extracting Doorstop to {doorstopExtractDir}...");
 
-	if (!DirectoryExists(extractDir))
-	{
-		CreateDirectory(extractDir);
-	}
+	EnsureDirectoryExists(doorstopExtractDir);
+	CleanDirectory(doorstopExtractDir);
 
-	Unzip(zipFile, extractDir);
+	Unzip(doorstopZip, doorstopExtractDir);
 	Information("Extraction completed.");
 
 	// Update doorstop_config.ini to point to BepInEx
-	var configFile = extractDir + File("x64/doorstop_config.ini");
+	var configFile = doorstopExtractDir + File("x64/doorstop_config.ini");
 	if (FileExists(configFile))
 	{
 		Information("Updating doorstop_config.ini...");

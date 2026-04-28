@@ -484,3 +484,6 @@ $RECYCLE.BIN/
 # Thunderstore packaging
 dist/
 build/
+
+# Download cache
+downloads/
