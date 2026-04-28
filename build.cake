@@ -1,4 +1,5 @@
 var doorstopVersion = "4.5.0";
+var dotnetRuntimeVersion = "10.0.7";
 var projectPath = "./RenderiteHook/RenderiteHook.csproj";
 
 var target = Argument("target", "Default");
@@ -10,6 +11,11 @@ var distDir = Directory("./dist");
 var extractDir = distDir + Directory("Doorstop");
 var downloadUrl = $"https://github.com/NeighTools/UnityDoorstop/releases/download/v{doorstopVersion}/doorstop_win_release_{doorstopVersion}.zip";
 var zipFile = distDir + File($"doorstop_win_release_{doorstopVersion}.zip");
+
+var dotnetRuntimeUrl = $"https://builds.dotnet.microsoft.com/dotnet/Runtime/{dotnetRuntimeVersion}/dotnet-runtime-{dotnetRuntimeVersion}-win-x64.zip";
+var dotnetRuntimeZip = distDir + File($"dotnet-runtime-{dotnetRuntimeVersion}-win-x64.zip");
+var dotnetExtractDir = distDir + Directory("dotnet_extract");
+var dotnetDestDir = distDir + Directory("dotnet");
 
 Task("Clean")
 	.Does(() =>
@@ -38,6 +44,60 @@ Task("DownloadDoorstop")
 	else
 	{
 		Information("File already exists, skipping download.");
+	}
+});
+
+Task("DownloadDotnetRuntime")
+	.IsDependentOn("Clean")
+	.Does(() =>
+{
+	Information($"Downloading .NET Runtime v{dotnetRuntimeVersion}...");
+
+	if (!FileExists(dotnetRuntimeZip))
+	{
+		DownloadFile(dotnetRuntimeUrl, dotnetRuntimeZip);
+		Information($"Downloaded to: {dotnetRuntimeZip}");
+	}
+	else
+	{
+		Information("File already exists, skipping download.");
+	}
+});
+
+Task("ExtractDotnetRuntime")
+	.IsDependentOn("DownloadDotnetRuntime")
+	.Does(() =>
+{
+	Information($"Extracting .NET Runtime to {dotnetDestDir}...");
+
+	if (!DirectoryExists(dotnetExtractDir))
+	{
+		CreateDirectory(dotnetExtractDir);
+	}
+
+	Unzip(dotnetRuntimeZip, dotnetExtractDir);
+
+	var sharedFrameworkDir = dotnetExtractDir + Directory("shared") + Directory("Microsoft.NETCore.App") + Directory(dotnetRuntimeVersion);
+
+	if (!DirectoryExists(dotnetDestDir))
+	{
+		CreateDirectory(dotnetDestDir);
+	}
+
+	// Flatten: copy files directly into dist/dotnet/ (no subdirectory nesting)
+	var globPath = (DirectoryPath)sharedFrameworkDir + "/**/*.*";
+	foreach (var file in GetFiles(globPath))
+	{
+		var fileName = System.IO.Path.GetFileName(file.FullPath);
+		var destPath = dotnetDestDir + File(fileName);
+		CopyFile(file, destPath);
+	}
+	Information("Dotnet runtime extraction completed.");
+
+	// Clean up temp extract dir
+	if (DirectoryExists(dotnetExtractDir))
+	{
+		DeleteDirectory(dotnetExtractDir, new DeleteDirectorySettings { Recursive = true });
 	}
 });
 
@@ -73,6 +133,7 @@ Task("ExtractDoorstop")
 
 Task("BuildRenderiteHook")
 	.IsDependentOn("ExtractDoorstop")
+	.IsDependentOn("ExtractDotnetRuntime")
 	.Does(() =>
 {
 	Information($"Building RenderiteHook version {packageVersion}...");
