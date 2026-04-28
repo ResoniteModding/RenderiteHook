@@ -46,6 +46,7 @@ public class Plugin : BasePlugin
 
 		public static string OnStartRenderer(string args)
 		{
+			CopyDotnetFiles(Engine.Current.RenderSystem);
 			CopyDoorstopFiles(Engine.Current.RenderSystem);
 
 			var originalArgs = GetOriginalCommandLineArgs();
@@ -183,5 +184,61 @@ public class Plugin : BasePlugin
 				Log.LogError($"Failed to copy Doorstop files: {ex.Message}");
 			}
 		}
+
+			private static void CopyDotnetFiles(RenderSystem renderSystem)
+			{
+				try
+				{
+					var pluginLocation = Assembly.GetExecutingAssembly().Location;
+					var pluginDir = Path.GetDirectoryName(pluginLocation);
+
+					if (string.IsNullOrEmpty(pluginDir))
+					{
+						Log.LogError("Could not determine plugin directory");
+						return;
+					}
+
+					var dotnetSourceDir = Path.Combine(pluginDir, "dotnet");
+
+					if (!Directory.Exists(dotnetSourceDir))
+					{
+						Log.LogWarning($"Dotnet directory not found at: {dotnetSourceDir}");
+						return;
+					}
+
+					var rendererPath = renderSystem.RendererPath;
+					var rendererDir = Path.GetDirectoryName(rendererPath);
+
+					if (string.IsNullOrEmpty(rendererDir))
+					{
+						Log.LogError("Could not determine renderer directory");
+						return;
+					}
+
+					var dotnetDestDir = Path.Combine(rendererDir, "dotnet");
+					Log.LogInfo($"Copying dotnet files from {dotnetSourceDir} to {dotnetDestDir}");
+
+					foreach (var file in Directory.GetFiles(dotnetSourceDir, "*", SearchOption.AllDirectories))
+					{
+						var relativePath = Path.GetRelativePath(dotnetSourceDir, file);
+						var destPath = Path.Combine(dotnetDestDir, relativePath);
+						var destDirectory = Path.GetDirectoryName(destPath);
+
+						if (!Directory.Exists(destDirectory))
+						{
+							Directory.CreateDirectory(destDirectory);
+						}
+
+						File.Copy(file, destPath, overwrite: true);
+						Log.LogInfo($"Copied: {relativePath}");
+					}
+
+					Log.LogInfo("Dotnet files copied successfully");
+				}
+				catch (Exception ex)
+				{
+					Log.LogError($"Failed to copy dotnet files: {ex.Message}");
+				}
+			}
 	}
 }
