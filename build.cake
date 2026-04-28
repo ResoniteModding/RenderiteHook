@@ -1,4 +1,4 @@
-var doorstopVersion = "4.4.1";
+var doorstopVersion = "4.5.0";
 var projectPath = "./RenderiteHook/RenderiteHook.csproj";
 
 var target = Argument("target", "Default");
