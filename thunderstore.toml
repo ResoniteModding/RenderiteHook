@@ -13,8 +13,8 @@ containsNsfwContent = false
 
 # List any dependencies your mod has here, in the format "namespace-modname" = "version-constraint"
 [package.dependencies]
-ResoniteModding-BepInExRenderer = "5.4.233001"
-ResoniteModding-BepisLoader = "1.5.0"
+ResoniteModding-BepInExRenderer = "6.0.755"
+ResoniteModding-BepisLoader = "1.6.0"
 
 [build]
 icon = "./icon.png"
@@ -32,6 +32,10 @@ target = "plugins/RenderiteHook/"
 [[build.copy]]
 source = "./dist/Doorstop/x64"
 target = "plugins/RenderiteHook/Doorstop"
+
+[[build.copy]]
+source = "./dist/dotnet"
+target = "plugins/RenderiteHook/dotnet"
 
 # [[build.copy]]
 # source = "./CHANGELOG.md"
