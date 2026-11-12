@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Authors>ResoniteModding</Authors>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <RepositoryUrl>https://github.com/ResoniteModding/RenderiteHook</RepositoryUrl>
     <PackageId>ResoniteModding.RenderiteHook</PackageId>
     <Product>RenderiteHook</Product>
