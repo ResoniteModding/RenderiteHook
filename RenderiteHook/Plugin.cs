@@ -22,7 +22,7 @@ public class Plugin : BasePlugin
         HarmonyInstance.PatchAll();
     }
 
-    [HarmonyPatch(typeof(RenderSystem), "StartRenderer", MethodType.Async)]
+    [HarmonyPatch(typeof(RenderSystem), "StartRenderer")]
     public class ArgumentsPatch
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codes)
