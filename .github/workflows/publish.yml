@@ -6,31 +6,19 @@ on:
 jobs:
     release:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
                 with:
-                    fetch-depth: 0 # Need to fetch all for proper history
-            -   name: Collect build info
-                id: info
-                run: |
-                    # Get short SHA
-                    SHA_SHORT=$(git rev-parse --short HEAD)
-                    echo "sha_short=$SHA_SHORT" >> $GITHUB_OUTPUT
-                    
-                    # Extract version from csproj
-                    VERSION=$(grep -oP '(?<=<Version>)[^<]+' RenderiteHook/RenderiteHook.csproj)
-                    echo "version=$VERSION" >> $GITHUB_OUTPUT
-                    echo "Version found: $VERSION"
-            -   uses: actions/setup-dotnet@v4
+                    fetch-depth: 0
+                    persist-credentials: false
+            -   uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
                 with:
-                    dotnet-version: "9.0.x"
-            -   name: Install Cake Tool
-                run: dotnet tool restore
-            -   name: Build with Cake
-                run: dotnet cake --target=Build --verbosity=normal
-            -   name: Publish to Thunderstore
-                run: |
-                    ZIP_FILE=$(ls ./build/*.zip | head -1)
-                    dotnet tcli publish --file "$ZIP_FILE"
+                    global-json-file: global.json
+            -   name: Prepare UnityDoorstop
+                run: dotnet tool restore && dotnet cake --target=ExtractDoorstop
+            -   name: Build and publish Thunderstore package
                 env:
                     TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+                run: dotnet build -c Release -t:PackTS -P:PublishTS=true
