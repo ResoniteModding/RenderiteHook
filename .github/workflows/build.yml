@@ -10,32 +10,36 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
                 with:
-                    fetch-depth: 0 # Need to fetch all for proper history
-            -   name: Collect build info
-                id: info
+                    fetch-depth: 0
+                    persist-credentials: false
+            -   uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+                with:
+                    global-json-file: global.json
+            -   name: Prepare UnityDoorstop
+                run: dotnet tool restore && dotnet cake --target=ExtractDoorstop
+            -   name: Build and create Thunderstore package
+                id: build
                 run: |
-                    # Get short SHA
-                    SHA_SHORT=$(git rev-parse --short HEAD)
-                    echo "sha_short=$SHA_SHORT" >> $GITHUB_OUTPUT
-                    
-                    # Extract version from csproj
-                    VERSION=$(grep -oP '(?<=<Version>)[^<]+' RenderiteHook/RenderiteHook.csproj)
-                    echo "version=$VERSION" >> $GITHUB_OUTPUT
+                    dotnet build -c Release -t:PackTS
+                    dotnet pack -c Release --no-build -o ./bin/dist
+                    cp ./RenderiteHook/bin/Release/RenderiteHook.dll ./bin/dist/
+            -   name: Show version
+                id: info
+                env:
+                    VERSION: '${{ steps.build.outputs.version }}'
+                run: |
                     echo "Version found: $VERSION"
-            -   uses: actions/setup-dotnet@v4
-                with:
-                    dotnet-version: "9.0.x"
-            -   name: Install Cake Tool
-                run: dotnet tool restore
-            -   name: Build with Cake
-                run: dotnet cake --target=Build --verbosity=normal
+                    echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
             -   name: Upload artifacts
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
                 with:
-                    name: RenderiteHook-${{ steps.info.outputs.version }}-${{ steps.info.outputs.sha_short }}
+                    name: 'RenderiteHook-${{ steps.build.outputs.version }}-${{ steps.info.outputs.sha_short }}'
                     path: |
-                        ./RenderiteHook/bin/Release/*.dll
+                        ./bin/dist/*.nupkg
+                        ./bin/dist/*.dll
                         ./build/*.zip
