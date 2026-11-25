@@ -26,7 +26,7 @@ jobs:
                 id: build
                 run: |
                     dotnet build -c Release -t:PackTS
-                    dotnet pack -c Release --no-build -o ./bin/dist
+                    mkdir -p ./bin/dist
                     cp ./RenderiteHook/bin/Release/RenderiteHook.dll ./bin/dist/
             -   name: Show version
                 id: info
@@ -40,6 +40,5 @@ jobs:
                 with:
                     name: 'RenderiteHook-${{ steps.build.outputs.version }}-${{ steps.info.outputs.sha_short }}'
                     path: |
-                        ./bin/dist/*.nupkg
                         ./bin/dist/*.dll
                         ./build/*.zip
